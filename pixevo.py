@@ -21,37 +21,42 @@ def loss(img1, img2): # Calculates absolute difference between all pixel values 
     return np.sum(cv.absdiff(img1, img2))/max_loss
 
 childrendistribution = []
-def getchildren(population: int, numchildren: function, numparents: int, mutatefrac: float, victorfac: int, sexualrepr=False) -> dict:
-    if childrendistribution == []:
-        assert len(population) == numparents
+def getchildren(img, population: int, numchildren: int, numparents: int, mutatefrac: float, victorfac: int = 1.0, sexualrepr=False) -> dict:
+    # if childrendistribution == []:
+        # assert len(population) == numparents
 
-        avgkids = numchildren/numparents
-        assert int(avgkids) == avgkids # Children must be integers...
+        # avgkids = numchildren/numparents
+        # assert int(avgkids) == avgkids # Children must be integers...
 
-
-
-
-
-    children = [mutateimg(img, mutatefrac) for x in range(children)]
+    children = [mutateimg(img, mutatefrac) for x in range(int(numchildren))]
     losses = [loss(target, child) for child in children]
     kiddict = {loss: kid for kid, loss in zip(children, losses)}
+
     return kiddict
+    # {loss: dict} is not robust long term
+    # hash of image?
+    # num: dict
 
 def evolve(mutatefrac, numchildren, numparents=1, maxgen=np.inf, samelimit=np.inf, victorfac=1, keepbest=False):
     bestloss_alltime = np.inf
-    population = [mutateimg(target, 1.0) for x in range(numparents)]
+    # population = [mutateimg(target, 1.0) for x in range(numchildren)]
+    population = 0
     generation = 0
     losslist = []
     samecounter = 0
 
+    randomimg = mutateimg(target, 1.0)
+
     while generation < maxgen:
-        kids = getchildren(population, numchildren, numparents, mutatefrac, victorfac) # victorfac is the number of times more children that the best parent has than the worst
-        # cull all but top parents
-        bestloss = min(kids.keys())
-        if bestloss < bestloss_alltime:
-            randomimg = kids[bestloss]
-            bestloss_alltime = bestloss
+        bestloss, bestimg = max(population), population[max(population)]
+        population = getchildren(img=randomimg, population= population, numchildren=numchildren, numparents=numparents, mutatefrac=mutatefrac) # victorfac is the number of times more children that the best parent has than the worst
+        population = sorted(population)[:numparents]
+
+        if max(population) > bestloss_alltime:
             samecounter = 0
+            bestloss_alltime = bestloss
+            if keepbest:
+                population[bestloss] = bestimg
         else:
             samecounter += 1
         if samecounter > samelimit:
@@ -70,7 +75,6 @@ def evolve(mutatefrac, numchildren, numparents=1, maxgen=np.inf, samelimit=np.in
                 cv.imshow(displaywindowname, cv.resize(concat, (0,0), fx=rescale_to_display, fy=rescale_to_display, interpolation=cv.INTER_NEAREST))
                 cv.waitKey(0)
     return (bestloss_alltime, generation)
-
 
 def sweep_mfracs_nkids(mfrange, nkrange, mfpts, nkpts, gens, stop_after_same):
     mfs = np.linspace(*mfrange, mfpts)
@@ -120,7 +124,8 @@ if __name__ == "__main__":
     stop_after_same = np.inf
     if mode == 'single':
         mutatefrac = 0.001
-        numchildren = lambda k, pop: int((1/k) * pop - 1) # Number of kids as function of success (k=1 is lowest loss of this generation) and pop size
+        numchildren = 100
+        # numchildren = lambda k, pop: int((1/k) * pop - 1) # Number of kids as function of success (k=1 is lowest loss of this generation) and pop size
         stopevery = 100 # gens
         evolve(mutatefrac, numchildren, np.inf, stop_after_same)
     elif mode == 'sweep':
@@ -151,8 +156,3 @@ Cladogram mapping and storing - sample every x generations? Species are arbitrar
 Can remake IDs every x generations.
 
 """
-
-
-
-    
-    
