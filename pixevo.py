@@ -225,7 +225,7 @@ class PixEvolver():
                     self.population[k]["inheritance"] = k
             self.generation += 1
 
-        return {'bestloss': bestloss_alltime, 'generation': self.generation}
+        return {'bestloss': bestloss_alltime, 'generation': self.generation, 'bestimg': bestimg, 'inheritance': self.inheritances}
 
     def sweep_mfracs_nkids(self, mfrange, nkrange, mfpts, nkpts, gens, stop_after_same):
         mfs = np.linspace(*mfrange, mfpts)
