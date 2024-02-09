@@ -30,10 +30,10 @@ class PixEvolver():
         if not self.sweep:
             mutatefrac = lambda loss: 0.004 * loss
             morekidsfac = 1
-            childrenbasefunction = lambda k, pop: 3
+            childrenbasefunction = lambda k, pop: 10
             # childrenbasefunction = lambda k, pop: int((1/k) * pop - 1) if k != 0 else int(pop - 1) # Number of kids as function of success (k=1 is lowest loss of this generation) and pop size
             numchildren = lambda k, pop: int(morekidsfac * childrenbasefunction(k, pop))
-            numparents = 10 # reproducers every generation
+            numparents = 1 # reproducers every generation
             maxgen = np.inf
             samelimit = 10000 # gens
             keepbest = False
@@ -272,16 +272,12 @@ class ClickEventHandler:
                     plt.ylabel('Loss')
                     plt.show()
 
-pe = PixEvolver(targetfilename='miss.jpg')
-pe.evolve(generations=1000, display=True)
-time.sleep(3)
-pe.evolve(generations=1000, display=True)
-time.sleep(3)
-pe.evolve(generations=1000, display=True)
+pe = PixEvolver(targetfilename='sunset.jpg')
+pe.evolve(generations=10000, display=True)
 
 
 
-"""
+_ = """
 Future work:
 How to encourage different lineages to stay around? Only a single niche is available
 Each image is a different niche?
