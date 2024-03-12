@@ -7,6 +7,8 @@ from typing import Callable
 from sklearn.metrics import r2_score
 from itertools import islice
 import time
+from PIL import Image, ImageSequence
+import PIL
 
 class PixEvolver():
     def __init__(self, targetfilename, width=20, displaywidth=500, displaywindowname='window', sweep=False):
@@ -174,11 +176,13 @@ class PixEvolver():
         print(f'equivalent genome size {4 * self.numchannels} BP')
         print(f'mutatefrac floor {1/self.numpixels:.4f}')
 
-    def evolve(self, generations, display=False):
+    def evolve(self, generations, display=False, gif_output_path=None, fps=5):
         self.end = self.generation + generations
         if display:
             cv2.namedWindow(self.displaywindowname)
             clickhandler = ClickEventHandler(self.losslist, self.displaywindowname)
+        if gif_output_path:
+            gif = []
 
         while self.generation < self.end: # main evolutionary loop
             if display:
@@ -213,6 +217,8 @@ class PixEvolver():
                 cv2.waitKey(1)
 
             if self.generation % self.updatecycle == 0:
+                if gif_output_path:
+                    gif.append(cv2.cvtColor(concat, cv2.COLOR_BGR2RGB))
                 chansrandomized = self.numchannels * self.mutatefrac(bestloss_alltime)
                 self.inheritances[self.generation] = [self.population[k]["inheritance"] for k in self.population.keys()]
                 if display:
@@ -224,6 +230,14 @@ class PixEvolver():
                 for k in self.population.keys():
                     self.population[k]["inheritance"] = k
             self.generation += 1
+        
+        for idx, pic in enumerate(gif):
+            if idx == 0:
+                gif[0] = gif[0].quantize(colors=256, method=Image.Quantize.MAXCOVERAGE)
+            else:
+                gif[idx] = pic.quantize(colors=256, palette=gif[0], method=PIL.Image.Quantize.MAXCOVERAGE)
+
+        gif[0].save(gif_output_path, save_all=True, append_images=gif[1:], optimize=True, duration=200, loop=0, palette=5000) # Doesn't work very well
 
         return {'bestloss': bestloss_alltime, 'generation': self.generation, 'bestimg': bestimg, 'inheritance': self.inheritances}
 
@@ -272,8 +286,8 @@ class ClickEventHandler:
                     plt.ylabel('Loss')
                     plt.show()
 
-pe = PixEvolver(targetfilename='sunset.jpg')
-pe.evolve(generations=10000, display=True)
+pe = PixEvolver(targetfilename='imgs/sunset.JPG', displaywidth=100)
+pe.evolve(generations=3000, display=True, gif_output_path='result_gifs/sunset2.gif', fps=30)
 
 
 
