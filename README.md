@@ -1,6 +1,6 @@
 # Pixelated Evolution
 
-![](https://github.com/pwspen/pterobot/pixevo.gif)
+![](https://github.com/pwspen/pixevo/blob/main/pixevo.gif)
 
 This is a project, written in Python, that simulates evolution. I like to think of it like "evolution where pixels are the unit of information".
 
